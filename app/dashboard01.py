@@ -19,16 +19,15 @@ POSTGRES_DB = os.getenv("POSTGRES_DB")
 def ler_dados_postgres():
     """Lê os dados do banco PostgreSQL e retorna como DataFrame."""
     try:
-        conn = psycopg2.connect(
-            host=POSTGRES_HOST,
-            database=POSTGRES_DB,
-            user=POSTGRES_USER,
-            password=POSTGRES_PASSWORD,
-            port=POSTGRES_PORT
-        )
+        from sqlalchemy import create_engine
+        
+        # Criar string de conexão SQLAlchemy
+        DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
+        engine = create_engine(DATABASE_URL)
+        
         query = "SELECT * FROM bitcoin_precos ORDER BY timestamp DESC"
-        df = pd.read_sql(query, conn)
-        conn.close()
+        df = pd.read_sql(query, engine)
+        engine.dispose()
         return df
     except Exception as e:
         st.error(f"Erro ao conectar no PostgreSQL: {e}")
